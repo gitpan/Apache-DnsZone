@@ -15,6 +15,10 @@ chomp($user);
 print "Domain to delete from $user: ";
 my $domain = <>;
 chomp($domain);
+unless ($domain =~ \d+\.in\-addr\.arpa$/) {
+    print "Domain needs to be a reverse zone\n";
+    exit 1;
+}
 
 my $uid = $dbh->selectrow_array("select id from users where username = ?", undef, $user);
 unless ($uid) {
@@ -28,12 +32,7 @@ unless ($dom_id) {
 
 $dbh->do("delete from rec_count where domain = ?", undef, $dom_id);
 $dbh->do("delete from soa where domain = ?", undef, $dom_id);
-$dbh->do("delete from records_A where domain = ?", undef, $dom_id);
-$dbh->do("delete from records_AAAA where domain = ?", undef, $dom_id);
-$dbh->do("delete from records_CNAME where domain = ?", undef, $dom_id);
-$dbh->do("delete from records_MX where domain = ?", undef, $dom_id);
-$dbh->do("delete from records_NS where domain = ?", undef, $dom_id);
-$dbh->do("delete from records_TXT where domain = ?", undef, $dom_id);
+$dbh->do("delete from records_PTR where domain = ?", undef, $dom_id);
 $dbh->do("delete from domains where id = ?", undef, $dom_id);
 
 print "$domain succesfully deleted\n";
